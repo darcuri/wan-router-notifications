@@ -1,0 +1,2 @@
+<132>Feb  3 14:00:01 ER605 kernel: Blocked incoming TCP connection from 10.0.0.1:52341 to 192.168.0.1:22
+<132>Feb  3 14:00:02 ER605 kernel: Blocked incoming UDP connection from 10.0.0.2:53 to 192.168.0.1:161

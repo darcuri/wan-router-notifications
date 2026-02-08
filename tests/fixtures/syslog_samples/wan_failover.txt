@@ -1,0 +1,7 @@
+<133>Feb  6 19:30:52 ER605 SWITCH: [osg:0C-EF-15-05-2C-DF]: The physical connection status of [WAN1] was down.
+<133>Feb  6 19:31:01 ER605 ONLINE_DECTION: [osg:0C-EF-15-05-2C-DF]: The online detection result of [WAN1] was offline.
+<133>Feb  6 19:31:01 ER605 Link Backup: [osg:0C-EF-15-05-2C-DF] Backup [WAN/LAN2] took effect.
+<133>Feb  6 19:31:02 ER605 ONLINE_DECTION: [osg:0C-EF-15-05-2C-DF][alertLogResolve]: The online detection result of [WAN/LAN2] was online.
+<133>Feb  6 20:21:11 ER605 ONLINE_DECTION: [osg:0C-EF-15-05-2C-DF][alertLogResolve]: The online detection result of [WAN1] was online.
+<133>Feb  6 20:21:11 ER605 Link Backup: [osg:0C-EF-15-05-2C-DF] Backup [WAN/LAN2] was down.
+<133>Feb  6 20:21:11 ER605 ONLINE_DECTION: [osg:0C-EF-15-05-2C-DF]: The online detection result of [WAN/LAN2] was offline.

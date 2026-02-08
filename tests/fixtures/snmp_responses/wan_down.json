@@ -1,0 +1,22 @@
+{
+  "interfaces": {
+    "WAN1": {
+      "ifIndex": 2,
+      "ifDescr": "eth0.1",
+      "ifOperStatus": 2,
+      "ifInOctets": 123456789,
+      "ifOutOctets": 987654321,
+      "ifInErrors": 5,
+      "ifOutErrors": 2
+    },
+    "WAN2": {
+      "ifIndex": 3,
+      "ifDescr": "eth0.2",
+      "ifOperStatus": 1,
+      "ifInOctets": 11111111,
+      "ifOutOctets": 22222222,
+      "ifInErrors": 0,
+      "ifOutErrors": 0
+    }
+  }
+}

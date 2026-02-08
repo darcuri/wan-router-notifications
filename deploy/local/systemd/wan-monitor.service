@@ -1,0 +1,25 @@
+# deploy/local/systemd/wan-monitor.service
+[Unit]
+Description=WAN Router Local Monitor
+After=network.target
+
+[Service]
+Type=simple
+# Runs as root: syslog receiver needs privileged port 514
+WorkingDirectory=/opt/wan-router-notifications
+ExecStart=/opt/wan-router-notifications/.venv/bin/python -m local.main -c /opt/wan-router-notifications/local/config.yaml
+Restart=always
+RestartSec=10
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/opt/wan-router-notifications
+
+# Environment
+EnvironmentFile=/opt/wan-router-notifications/.env
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,26 @@
+# deploy/remote/systemd/wan-sentinel.service
+[Unit]
+Description=WAN Router Remote Sentinel
+After=network.target headscale.service
+
+[Service]
+Type=simple
+User=sentinel
+Group=sentinel
+WorkingDirectory=/opt/wan-router-notifications
+ExecStart=/opt/wan-router-notifications/.venv/bin/python -m remote.main -c /opt/wan-router-notifications/remote/config.yaml
+Restart=always
+RestartSec=10
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/opt/wan-router-notifications
+
+# Environment
+EnvironmentFile=/opt/wan-router-notifications/.env
+
+[Install]
+WantedBy=multi-user.target

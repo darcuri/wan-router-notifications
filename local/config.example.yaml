@@ -1,0 +1,29 @@
+router:
+  host: "192.168.0.1"
+  name: "router"
+  snmp_username: "snmpuser"
+  snmp_auth_key: "changeme"  # Override with SNMP_AUTH_KEY env var
+  snmp_auth_protocol: "MD5"  # MD5 or SHA
+  snmp_port: 161
+  snmp_timeout: 5
+  wan_gateways:
+    WAN1: "192.168.1.1"      # Primary WAN gateway IP
+    WAN2: "192.168.2.1"      # Backup WAN gateway IP
+  # wan_interfaces:           # Optional: ifIndex for physical link monitoring
+  #   WAN1: 4
+  #   WAN2: 5
+
+polling:
+  normal_interval: 60
+  alert_interval: 15
+  recovery_threshold: 5
+
+syslog:
+  enabled: true
+  port: 514
+  bind_address: "0.0.0.0"
+
+heartbeat:
+  remote_url: "http://100.64.0.1:8080/heartbeat"
+  interval: 60
+  timeout: 10

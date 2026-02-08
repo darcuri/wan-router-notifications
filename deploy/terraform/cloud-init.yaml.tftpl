@@ -1,0 +1,49 @@
+# deploy/terraform/cloud-init.yaml.tftpl
+#cloud-config
+
+package_update: true
+package_upgrade: true
+
+packages:
+  - python3.11
+  - python3.11-venv
+  - python3-pip
+  - git
+  - firewalld
+  - iptables-persistent
+
+users:
+  - name: sentinel
+    groups: sudo
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+
+write_files:
+  - path: /opt/setup-sentinel.sh
+    permissions: '0755'
+    content: |
+      #!/bin/bash
+      set -e
+
+      # Install Headscale
+      HEADSCALE_VERSION="0.22.3"
+      curl -Lo /tmp/headscale.deb "https://github.com/juanfont/headscale/releases/download/v$${HEADSCALE_VERSION}/headscale_$${HEADSCALE_VERSION}_linux_${arch}.deb"
+      dpkg -i /tmp/headscale.deb
+
+      # Configure firewall (firewalld)
+      systemctl enable --now firewalld
+      firewall-cmd --permanent --add-port=22/tcp
+      firewall-cmd --permanent --add-port=443/tcp
+      firewall-cmd --permanent --add-port=3478/udp
+      firewall-cmd --reload
+
+      # OCI Ubuntu images ship iptables rules that reject all non-SSH
+      # traffic. Insert rules before the REJECT to allow Headscale and STUN.
+      iptables -I INPUT 5 -p tcp --dport 443 -j ACCEPT
+      iptables -I INPUT 6 -p udp --dport 3478 -j ACCEPT
+      netfilter-persistent save
+
+      echo "Setup complete. Run the setup-remote.sh script to finish configuration."
+
+runcmd:
+  - /opt/setup-sentinel.sh

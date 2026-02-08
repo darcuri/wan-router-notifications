@@ -1,0 +1,17 @@
+heartbeat:
+  expected_interval: 60
+  missed_threshold: 3
+  listen_host: "100.64.0.1"  # Tailscale/VPN IP
+  listen_port: 8080
+
+external_probe:
+  enabled: false
+  # target_ip: ""            # Home network public IP
+  # interval: 300
+  # timeout: 10
+
+dns_monitor:
+  enabled: false
+  # hostname: "example.duckdns.org"
+  # expected_ip: ""
+  # interval: 300
