@@ -44,5 +44,8 @@ Thumbs.db
 htmlcov/
 .mypy_cache/
 
+# Claude Code local config
+.claude/
+
 # local docs and plans
 docs/plans/

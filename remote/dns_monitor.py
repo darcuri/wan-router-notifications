@@ -14,7 +14,7 @@ def resolve_hostname(hostname: str) -> str | None:
     try:
         results = socket.getaddrinfo(hostname, None, socket.AF_INET)
         if results:
-            return results[0][4][0]
+            return str(results[0][4][0])
     except socket.gaierror as e:
         logger.warning(f"DNS resolution failed for {hostname}: {e}")
     return None

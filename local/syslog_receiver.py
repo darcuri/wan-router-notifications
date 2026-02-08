@@ -20,7 +20,10 @@ WAN_PATTERNS = [
     (re.compile(r"Backup \[(.+?)\] took effect"), "failover_activated"),
     (re.compile(r"Backup \[(.+?)\] was down"), "failover_deactivated"),
     (re.compile(r"physical connection status of \[(.+?)\] was down"), "link_down"),
-    (re.compile(r"online detection result of \[(.+?)\] was (?:online|offline)"), "online_detection"),
+    (
+        re.compile(r"online detection result of \[(.+?)\] was (?:online|offline)"),
+        "online_detection",
+    ),
 ]
 
 # Keywords for categorization

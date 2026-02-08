@@ -20,7 +20,10 @@ class TestParseSyslogMessage:
         assert event is None
 
     def test_parse_multi_word_tag(self):
-        raw = '<133>Feb  6 19:31:01 ER605 Link Backup: [osg:0C-EF-15-05-2C-DF] Backup [WAN/LAN2] took effect.'
+        raw = (
+            "<133>Feb  6 19:31:01 ER605 Link Backup:"
+            " [osg:0C-EF-15-05-2C-DF] Backup [WAN/LAN2] took effect."
+        )
         event = parse_syslog_message(raw)
         assert event is not None
         assert event.hostname == "ER605"
@@ -81,7 +84,10 @@ class TestCategorizeWanEvent:
         assert metadata["wan_interface"] == "WAN1"
 
     def test_online_detection_online(self):
-        msg = "[osg:0C-EF-15-05-2C-DF][alertLogResolve]: The online detection result of [WAN/LAN2] was online."
+        msg = (
+            "[osg:0C-EF-15-05-2C-DF][alertLogResolve]:"
+            " The online detection result of [WAN/LAN2] was online."
+        )
         category, metadata = categorize_message(msg)
         assert category == "wan"
         assert metadata["wan_event_type"] == "online_detection"
