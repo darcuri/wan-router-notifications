@@ -31,7 +31,7 @@ class TestHeartbeatSender:
     async def test_send_heartbeat_failure(self):
         sender = HeartbeatSender(remote_url="http://100.64.0.1:8080/heartbeat")
 
-        wan_states = {}
+        wan_states: dict[str, WANState] = {}
 
         with patch("httpx.AsyncClient.post") as mock_post:
             mock_post.side_effect = Exception("Connection refused")

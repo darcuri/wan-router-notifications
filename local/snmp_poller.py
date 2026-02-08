@@ -93,7 +93,8 @@ class SNMPPoller:
                     ObjectType(ObjectIdentity(oid)),
                 )
                 if error_indication or error_status:
-                    logger.error(f"SNMP ifOperStatus error for {name}: {error_indication or error_status}")
+                    err = error_indication or error_status
+                    logger.error(f"SNMP ifOperStatus error for {name}: {err}")
                     continue
                 for var_bind in var_binds:
                     # ifOperStatus: 1=up, 2=down, 3=testing, etc.

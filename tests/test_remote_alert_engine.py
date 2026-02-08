@@ -34,7 +34,7 @@ class TestRemoteAlertEngine:
         engine = RemoteAlertEngine()
 
         last_heartbeat = datetime(2026, 2, 3, 12, 0, 0, tzinfo=UTC)
-        wan_states = {}
+        wan_states: dict[str, WANState] = {}
 
         alert = engine.create_monitor_lost_alert(
             last_heartbeat=last_heartbeat,
