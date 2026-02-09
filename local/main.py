@@ -184,7 +184,7 @@ def main() -> None:
     # Setup logging
     logging.basicConfig(
         level=logging.DEBUG if args.verbose else logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        format="%(name)s - %(levelname)s - %(message)s",
     )
     # Suppress noisy third-party loggers
     logging.getLogger("pysnmp").setLevel(logging.WARNING)

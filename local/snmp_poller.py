@@ -51,6 +51,7 @@ class SNMPPoller:
         self.timeout = timeout
         self._engine = SnmpEngine()
         self._last_states: dict[str, WANState] = {}
+        self._last_unknown_gateway: str | None = None
         # Reverse map: gateway IP → WAN name
         self._gateway_to_wan = {gw: name for name, gw in wan_gateways.items()}
 
@@ -70,7 +71,7 @@ class SNMPPoller:
                 return None
 
             for var_bind in var_binds:
-                return str(var_bind[1])
+                return str(var_bind[1].prettyPrint())
             return None
         except Exception as e:
             logger.error(f"SNMP query failed: {e}")
@@ -113,7 +114,11 @@ class SNMPPoller:
         active_wan = self._gateway_to_wan.get(next_hop) if next_hop else None
 
         if next_hop and not active_wan:
-            logger.warning(f"Unknown next-hop gateway: {next_hop}")
+            if next_hop != self._last_unknown_gateway:
+                logger.warning(f"Unknown next-hop gateway: {next_hop}")
+                self._last_unknown_gateway = next_hop
+        else:
+            self._last_unknown_gateway = None
 
         link_status = await self._get_if_oper_status()
 

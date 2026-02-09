@@ -24,7 +24,7 @@ class AlertState:
     current_status: InterfaceStatus = InterfaceStatus.UNKNOWN
     last_alert_time: datetime | None = None
     last_status_change: datetime | None = None
-    consecutive_healthy: int = 0
+    consecutive_stable: int = 0
 
     def should_alert(self, new_status: InterfaceStatus) -> bool:
         """Determine if a status change should trigger an alert."""
@@ -75,8 +75,9 @@ class AlertEngine:
 
         alert_state = self._wan_states[state.interface]
         previous = self._previous_wan.get(state.interface)
+        state_changed = alert_state.should_alert(state.status)
 
-        if alert_state.should_alert(state.status):
+        if state_changed:
             if state.status == InterfaceStatus.DOWN:
                 if previous and previous.status == InterfaceStatus.UP:
                     uptime = format_duration((now - previous.since).total_seconds())
@@ -123,7 +124,6 @@ class AlertEngine:
                         timestamp=now,
                     )
                 )
-                alert_state.consecutive_healthy = 0
 
             elif state.status == InterfaceStatus.UP:
                 # Calculate downtime
@@ -151,11 +151,11 @@ class AlertEngine:
             alert_state.last_alert_time = now
             alert_state.last_status_change = now
 
-        # Track consecutive healthy polls for adaptive polling
-        if state.status == InterfaceStatus.UP:
-            alert_state.consecutive_healthy += 1
+        # Track consecutive stable polls for adaptive polling
+        if state_changed:
+            alert_state.consecutive_stable = 0
         else:
-            alert_state.consecutive_healthy = 0
+            alert_state.consecutive_stable += 1
 
         self._previous_wan[state.interface] = state
         return alerts
@@ -267,7 +267,7 @@ class AlertEngine:
         for state in self._wan_states.values():
             if state.current_status == InterfaceStatus.DOWN:
                 return True
-            if state.consecutive_healthy < 5:
+            if state.consecutive_stable < 5:
                 return True
         return False
 
