@@ -71,7 +71,7 @@ class TestAlertEngine:
         assert len(events) == 1
         assert "RECOVERED" in events[0].title
 
-    def test_process_syslog_auth_failure(self):
+    def test_non_wan_syslog_ignored(self):
         engine = AlertEngine()
         event = SyslogEvent(
             timestamp=datetime.now(UTC),
@@ -82,26 +82,7 @@ class TestAlertEngine:
             category="auth",
         )
         alerts = engine.process_syslog_event(event)
-        assert len(alerts) == 1
-        assert alerts[0].severity == AlertSeverity.WARNING
-
-    def test_cooldown_prevents_spam(self):
-        engine = AlertEngine(cooldown_seconds=300)
-        event = SyslogEvent(
-            timestamp=datetime.now(UTC),
-            facility="authpriv",
-            severity="warning",
-            hostname="ER605",
-            message="User admin login failed",
-            category="auth",
-        )
-        # First event - alerts
-        alerts1 = engine.process_syslog_event(event)
-        assert len(alerts1) == 1
-
-        # Same event within cooldown - no alert
-        alerts2 = engine.process_syslog_event(event)
-        assert len(alerts2) == 0
+        assert len(alerts) == 0
 
 
 class TestAlertEngineWanSyslog:
@@ -168,7 +149,7 @@ class TestAlertEngineWanSyslog:
         assert len(alerts) == 0
 
     def test_wan_events_bypass_cooldown(self):
-        engine = AlertEngine(cooldown_seconds=300)
+        engine = AlertEngine()
         event = SyslogEvent(
             timestamp=datetime.now(UTC),
             facility="SWITCH",

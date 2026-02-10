@@ -190,6 +190,8 @@ def main() -> None:
     logging.getLogger("pysnmp").setLevel(logging.WARNING)
     logging.getLogger("pyasn1").setLevel(logging.WARNING)
     logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
+    logging.getLogger("telegram").setLevel(logging.WARNING)
 
     # Create monitor
     monitor = LocalMonitor(
