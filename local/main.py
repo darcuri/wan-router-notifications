@@ -121,6 +121,14 @@ class LocalMonitor:
                 logger.error(f"Poll loop error: {e}")
                 await asyncio.sleep(10)
 
+    async def _status_loop(self) -> None:
+        """Log periodic status summary."""
+        while self._running:
+            await asyncio.sleep(300)
+            if self.syslog:
+                count = self.syslog.reset_count()
+                logger.info(f"Syslog received {count} messages since last check")
+
     async def _heartbeat_loop(self) -> None:
         """Heartbeat sending loop."""
         while self._running:
@@ -145,6 +153,7 @@ class LocalMonitor:
         await asyncio.gather(
             self._poll_loop(),
             self._heartbeat_loop(),
+            self._status_loop(),
         )
 
     async def stop(self) -> None:
@@ -184,12 +193,14 @@ def main() -> None:
     # Setup logging
     logging.basicConfig(
         level=logging.DEBUG if args.verbose else logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        format="%(name)s - %(levelname)s - %(message)s",
     )
     # Suppress noisy third-party loggers
     logging.getLogger("pysnmp").setLevel(logging.WARNING)
     logging.getLogger("pyasn1").setLevel(logging.WARNING)
     logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
+    logging.getLogger("telegram").setLevel(logging.WARNING)
 
     # Create monitor
     monitor = LocalMonitor(

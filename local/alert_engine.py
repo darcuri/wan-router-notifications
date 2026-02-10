@@ -24,7 +24,7 @@ class AlertState:
     current_status: InterfaceStatus = InterfaceStatus.UNKNOWN
     last_alert_time: datetime | None = None
     last_status_change: datetime | None = None
-    consecutive_healthy: int = 0
+    consecutive_stable: int = 0
 
     def should_alert(self, new_status: InterfaceStatus) -> bool:
         """Determine if a status change should trigger an alert."""
@@ -34,14 +34,6 @@ class AlertState:
         return new_status != self.current_status
 
 
-@dataclass
-class SyslogAlertState:
-    """Tracks cooldown for syslog alert categories."""
-
-    last_alert_time: datetime | None = None
-    count_since_last_alert: int = 0
-
-
 class AlertEngine:
     """Process events and generate alerts with deduplication."""
 
@@ -49,13 +41,10 @@ class AlertEngine:
         self,
         router_ip: str = "192.168.0.1",
         router_name: str = "router",
-        cooldown_seconds: int = 300,
     ):
         self.router_ip = router_ip
         self.router_name = router_name
-        self.cooldown_seconds = cooldown_seconds
         self._wan_states: dict[str, AlertState] = {}
-        self._syslog_states: dict[str, SyslogAlertState] = {}
         self._previous_wan: dict[str, WANState] = {}
 
     def process_wan_state(
@@ -75,8 +64,9 @@ class AlertEngine:
 
         alert_state = self._wan_states[state.interface]
         previous = self._previous_wan.get(state.interface)
+        state_changed = alert_state.should_alert(state.status)
 
-        if alert_state.should_alert(state.status):
+        if state_changed:
             if state.status == InterfaceStatus.DOWN:
                 if previous and previous.status == InterfaceStatus.UP:
                     uptime = format_duration((now - previous.since).total_seconds())
@@ -123,7 +113,6 @@ class AlertEngine:
                         timestamp=now,
                     )
                 )
-                alert_state.consecutive_healthy = 0
 
             elif state.status == InterfaceStatus.UP:
                 # Calculate downtime
@@ -151,64 +140,23 @@ class AlertEngine:
             alert_state.last_alert_time = now
             alert_state.last_status_change = now
 
-        # Track consecutive healthy polls for adaptive polling
-        if state.status == InterfaceStatus.UP:
-            alert_state.consecutive_healthy += 1
+        # Track consecutive stable polls for adaptive polling
+        if state_changed:
+            alert_state.consecutive_stable = 0
         else:
-            alert_state.consecutive_healthy = 0
+            alert_state.consecutive_stable += 1
 
         self._previous_wan[state.interface] = state
         return alerts
 
     def process_syslog_event(self, event: SyslogEvent) -> list[AlertEvent]:
-        """Process a syslog event and return any alerts."""
-        # Handle WAN events specially — no cooldown, specific severities
+        """Process a syslog event and return any alerts.
+
+        Only WAN events generate alerts. All other syslog categories are ignored.
+        """
         if event.category == "wan":
             return self._process_wan_syslog(event)
-
-        alerts: list[AlertEvent] = []
-        now = datetime.now(UTC)
-
-        # Determine severity based on syslog severity and category
-        if event.severity in ["emerg", "alert", "crit"]:
-            severity = AlertSeverity.CRITICAL
-        elif event.severity in ["err", "warning"]:
-            severity = AlertSeverity.WARNING
-        else:
-            severity = AlertSeverity.INFO
-
-        # Check cooldown
-        category_key = f"{event.category}:{event.severity}"
-        if category_key not in self._syslog_states:
-            self._syslog_states[category_key] = SyslogAlertState()
-
-        syslog_state = self._syslog_states[category_key]
-
-        if syslog_state.last_alert_time:
-            elapsed = (now - syslog_state.last_alert_time).total_seconds()
-            if elapsed < self.cooldown_seconds:
-                syslog_state.count_since_last_alert += 1
-                return []
-
-        # Generate alert
-        alerts.append(
-            AlertEvent(
-                severity=severity,
-                category=event.category,
-                title=f"{event.category.upper()}: {event.message[:50]}",
-                message=(
-                    f"Source: {event.hostname}\n"
-                    f"Time: {event.timestamp.strftime('%Y-%m-%d %H:%M:%S UTC')}\n"
-                    f"Facility: {event.facility}\n"
-                    f"Message: {event.message}"
-                ),
-                timestamp=now,
-            )
-        )
-
-        syslog_state.last_alert_time = now
-        syslog_state.count_since_last_alert = 0
-        return alerts
+        return []
 
     def _process_wan_syslog(self, event: SyslogEvent) -> list[AlertEvent]:
         """Process WAN-specific syslog events. No cooldown applied."""
@@ -267,7 +215,7 @@ class AlertEngine:
         for state in self._wan_states.values():
             if state.current_status == InterfaceStatus.DOWN:
                 return True
-            if state.consecutive_healthy < 5:
+            if state.consecutive_stable < 5:
                 return True
         return False
 

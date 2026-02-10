@@ -1,6 +1,6 @@
 [project]
 name = "wan-router-notifications"
-version = "0.1.0"
+version = "0.2.0"
 description = "Hybrid monitoring system for dual-WAN routers with Telegram alerts"
 readme = "README.md"
 requires-python = ">=3.11"

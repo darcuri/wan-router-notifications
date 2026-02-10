@@ -123,13 +123,21 @@ class SyslogReceiver:
         self.bind_address = bind_address
         self._transport: asyncio.DatagramTransport | None = None
         self._callbacks: list[Callable[[SyslogEvent], None]] = []
+        self.message_count: int = 0
 
     def add_callback(self, callback: Callable[[SyslogEvent], None]) -> None:
         """Register a callback for received syslog events."""
         self._callbacks.append(callback)
 
+    def reset_count(self) -> int:
+        """Return the message count and reset it to zero."""
+        count = self.message_count
+        self.message_count = 0
+        return count
+
     def _on_event(self, event: SyslogEvent) -> None:
         """Internal handler that dispatches to all callbacks."""
+        self.message_count += 1
         for callback in self._callbacks:
             try:
                 callback(event)
