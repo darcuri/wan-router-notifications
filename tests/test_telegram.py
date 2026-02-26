@@ -115,6 +115,7 @@ class TestRateLimiting:
                 await notifier.send_message("latest message")
 
                 assert notifier._pending_message == "latest message"
+                assert notifier._send_task is not None
                 await notifier._send_task
 
         assert mock_bot.send_message.call_count == 1

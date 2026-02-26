@@ -108,7 +108,7 @@ class TelegramNotifier:
         self._bot: Bot | None = None
         self._last_sent_time: float | None = None
         self._pending_message: str | None = None
-        self._send_task: asyncio.Task | None = None
+        self._send_task: asyncio.Task[None] | None = None
 
         if not mock_mode and bot_token:
             self._bot = Bot(token=bot_token)
@@ -147,15 +147,15 @@ class TelegramNotifier:
             return True
 
         now = time.monotonic()
-        elapsed = now - self._last_sent_time if self._last_sent_time is not None else None
-        if elapsed is None or elapsed >= self.min_interval_seconds:
+        last = self._last_sent_time
+        if last is None or (now - last) >= self.min_interval_seconds:
             self._last_sent_time = now
             return await self._do_send(text)
 
         # Rate limit active: queue the message, keeping only the most recent.
         self._pending_message = text
         if self._send_task is None or self._send_task.done():
-            remaining = self.min_interval_seconds - (now - self._last_sent_time)
+            remaining = self.min_interval_seconds - (now - last)
             self._send_task = asyncio.create_task(self._delayed_send(remaining))
         return True
 
