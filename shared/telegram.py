@@ -147,7 +147,8 @@ class TelegramNotifier:
             return True
 
         now = time.monotonic()
-        if self._last_sent_time is None or (now - self._last_sent_time) >= self.min_interval_seconds:
+        elapsed = now - self._last_sent_time if self._last_sent_time is not None else None
+        if elapsed is None or elapsed >= self.min_interval_seconds:
             self._last_sent_time = now
             return await self._do_send(text)
 
